@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slither.io Clone</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+            background: #2c3e50;
+        }
+
+        #menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        #menu h1 {
+            color: white;
+            font-size: 72px;
+            margin-bottom: 30px;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.3);
+        }
+
+        #menu input {
+            padding: 15px 30px;
+            font-size: 24px;
+            border: none;
+            border-radius: 50px;
+            margin-bottom: 20px;
+            width: 300px;
+            text-align: center;
+            outline: none;
+        }
+
+        #menu button {
+            padding: 15px 60px;
+            font-size: 28px;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            font-weight: bold;
+        }
+
+        #menu button:hover {
+            background: #2ecc71;
+            transform: scale(1.05);
+        }
+
+        #menu .instructions {
+            color: white;
+            margin-top: 30px;
+            font-size: 16px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        #gameCanvas {
+            display: block;
+            background: #1a1a2e;
+        }
+
+        #ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+
+        #score {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        #leaderboard {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            min-width: 200px;
+            z-index: 100;
+        }
+
+        #leaderboard h3 {
+            margin-bottom: 10px;
+            text-align: center;
+            color: #f39c12;
+        }
+
+        #leaderboard ol {
+            list-style-position: inside;
+            padding-left: 0;
+        }
+
+        #leaderboard li {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        #minimap {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            z-index: 100;
+        }
+
+        #deathScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        #deathScreen h2 {
+            color: #e74c3c;
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        #deathScreen p {
+            color: white;
+            font-size: 24px;
+            margin-bottom: 30px;
+        }
+
+        #deathScreen button {
+            padding: 15px 60px;
+            font-size: 28px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #deathScreen button:hover {
+            transform: scale(1.05);
+        }
+
+        #connectionStatus {
+            position: fixed;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+            border-radius: 5px;
+            display: none;
+            z-index: 1001;
+        }
+    </style>
+</head>
+<body>
+    <div id="connectionStatus">Connexion au serveur...</div>
+
+    <div id="menu">
+        <h1>🐍 Slither.io</h1>
+        <input type="text" id="nicknameInput" placeholder="Entre ton pseudo" maxlength="15" />
+        <button id="playButton">Jouer !</button>
+        <div class="instructions">
+            <p>🖱️ Déplace ta souris pour contrôler le serpent</p>
+            <p>⚡ Clic gauche maintenu = Boost (perd de la masse)</p>
+            <p>🎯 Mange les orbes pour grandir</p>
+            <p>💀 Ne touche pas les autres serpents !</p>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui">
+        <div id="score">Score: 0</div>
+        <div id="length">Longueur: 10</div>
+    </div>
+
+    <div id="leaderboard">
+        <h3>🏆 Top 10</h3>
+        <ol id="leaderboardList"></ol>
+    </div>
+
+    <canvas id="minimap"></canvas>
+
+    <div id="deathScreen">
+        <h2>💀 Tu es mort !</h2>
+        <p id="deathMessage">Score final: 0</p>
+        <button id="respawnButton">Rejouer</button>
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script>
+        // ==================== CONFIGURATION ====================
+        const SERVER_URL = 'http://localhost:3000'; // À MODIFIER APRÈS DÉPLOIEMENT
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const minimapCanvas = document.getElementById('minimap');
+        const minimapCtx = minimapCanvas.getContext('2d');
+        
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        minimapCanvas.width = 200;
+        minimapCanvas.height = 200;
+
+        // ==================== VARIABLES GLOBALES ====================
+        let socket;
+        let playerId = null;
+        let mapSize = 5000;
+        let gameState = { snakes: [], orbs: [], leaderboard: [] };
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        let camera = { x: 0, y: 0 };
+        let mySnake = null;
+        let isAlive = false;
+        let isBoosting = false;
+
+        // ==================== SOCKET.IO ====================
+        function connectToServer() {
+            document.getElementById('connectionStatus').style.display = 'block';
+            document.getElementById('connectionStatus').textContent = 'Connexion au serveur...';
+            
+            socket = io(SERVER_URL, {
+                transports: ['websocket', 'polling'],
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionAttempts: 5
+            });
+
+            socket.on('connect', () => {
+                console.log('✅ Connecté au serveur');
+                document.getElementById('connectionStatus').style.display = 'none';
+            });
+
+            socket.on('disconnect', () => {
+                console.log('❌ Déconnecté du serveur');
+                document.getElementById('connectionStatus').style.display = 'block';
+                document.getElementById('connectionStatus').textContent = 'Déconnecté... Reconnexion...';
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('Erreur de connexion:', error);
+                document.getElementById('connectionStatus').style.display = 'block';
+                document.getElementById('connectionStatus').textContent = '❌ Impossible de se connecter au serveur';
+            });
+
+            socket.on('init', (data) => {
+                playerId = data.playerId;
+                mapSize = data.mapSize;
+                isAlive = true;
+                console.log('🎮 Jeu initialisé, ID:', playerId);
+            });
+
+            socket.on('game_state', (data) => {
+                gameState = data;
+                mySnake = data.snakes.find(s => s.id === playerId);
+                
+                if (mySnake) {
+                    updateUI();
+                }
+            });
+
+            socket.on('player_died', (data) => {
+                isAlive = false;
+                showDeathScreen(data);
+            });
+        }
+
+        // ==================== UI ====================
+        function updateUI() {
+            if (!mySnake) return;
+            
+            document.getElementById('score').textContent = `Score: ${mySnake.score}`;
+            document.getElementById('length').textContent = `Longueur: ${mySnake.segments.length}`;
+            
+            // Leaderboard
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = gameState.leaderboard.map((player, index) => {
+                const emoji = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                const highlight = player.nickname === mySnake.nickname ? 'style="color: #f39c12; font-weight: bold;"' : '';
+                return `<li ${highlight}>${emoji} ${player.nickname}: ${player.score}</li>`;
+            }).join('');
+        }
+
+        function showDeathScreen(data) {
+            const screen = document.getElementById('deathScreen');
+            const message = document.getElementById('deathMessage');
+            
+            if (data.killerName) {
+                message.textContent = `Tué par ${data.killerName} | Score final: ${data.score}`;
+            } else {
+                message.textContent = `Score final: ${data.score}`;
+            }
+            
+            screen.style.display = 'flex';
+        }
+
+        // ==================== RENDU ====================
+        function render() {
+            if (!isAlive || !mySnake) return;
+            
+            // Clear
+            ctx.fillStyle = '#0f1419';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grille de fond
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            ctx.lineWidth = 1;
+            const gridSize = 50;
+            const offsetX = camera.x % gridSize;
+            const offsetY = camera.y % gridSize;
+            
+            for (let x = -offsetX; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = -offsetY; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            ctx.save();
+            ctx.translate(-camera.x, -camera.y);
+            
+            // Orbes
+            gameState.orbs.forEach(orb => {
+                ctx.fillStyle = orb.color;
+                ctx.beginPath();
+                ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Serpents
+            gameState.snakes.forEach(snake => {
+                const isMe = snake.id === playerId;
+                
+                // Corps
+                for (let i = snake.segments.length - 1; i >= 0; i--) {
+                    const segment = snake.segments[i];
+                    const radius = snake.radius * (1 - i * 0.01);
+                    
+                    ctx.fillStyle = snake.color;
+                    ctx.beginPath();
+                    ctx.arc(segment.x, segment.y, Math.max(radius, 5), 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Contour pour le joueur
+                    if (isMe && i === 0) {
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                    }
+                }
+                
+                // Pseudo
+                const head = snake.segments[0];
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(snake.nickname, head.x, head.y - snake.radius - 10);
+            });
+            
+            ctx.restore();
+            
+            // Minimap
+            renderMinimap();
+        }
+
+        function renderMinimap() {
+            minimapCtx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            minimapCtx.fillRect(0, 0, 200, 200);
+            
+            const scale = 200 / mapSize;
+            
+            // Serpents sur la minimap
+            gameState.snakes.forEach(snake => {
+                const head = snake.segments[0];
+                minimapCtx.fillStyle = snake.id === playerId ? '#f39c12' : snake.color;
+                minimapCtx.beginPath();
+                minimapCtx.arc(head.x * scale, head.y * scale, 3, 0, Math.PI * 2);
+                minimapCtx.fill();
+            });
+            
+            // Bordure
+            minimapCtx.strokeStyle = '#3498db';
+            minimapCtx.lineWidth = 2;
+            minimapCtx.strokeRect(0, 0, 200, 200);
+        }
+
+        // ==================== GAME LOOP ====================
+        function gameLoop() {
+            if (mySnake && mySnake.segments && mySnake.segments.length > 0) {
+                const head = mySnake.segments[0];
+                camera.x = head.x - canvas.width / 2;
+                camera.y = head.y - canvas.height / 2;
+            }
+            
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ==================== ÉVÉNEMENTS ====================
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isAlive) return;
+            
+            mouseX = e.clientX + camera.x;
+            mouseY = e.clientY + camera.y;
+            
+            socket.emit('mouse_move', { x: mouseX, y: mouseY });
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!isAlive) return;
+            isBoosting = true;
+            socket.emit('boost_start');
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isAlive) return;
+            isBoosting = false;
+            socket.emit('boost_end');
+        });
+
+        document.getElementById('playButton').addEventListener('click', () => {
+            const nickname = document.getElementById('nicknameInput').value.trim() || 'Joueur';
+            document.getElementById('menu').style.display = 'none';
+            socket.emit('join', { nickname });
+        });
+
+        document.getElementById('respawnButton').addEventListener('click', () => {
+            const nickname = document.getElementById('nicknameInput').value.trim() || 'Joueur';
+            document.getElementById('deathScreen').style.display = 'none';
+            socket.emit('join', { nickname });
+        });
+
+        document.getElementById('nicknameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('playButton').click();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // ==================== INITIALISATION ====================
+        connectToServer();
+        gameLoop();
+    </script>
+</body>
+</html>
