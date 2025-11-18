@@ -1,22 +1,13 @@
 {
-  "name": "slither-server",
+  "name": "slither-bots",
   "version": "1.0.0",
-  "description": "Serveur multijoueur pour le clone de Slither.io",
-  "main": "server.js",
+  "description": "Bots pour Slither.io",
+  "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
-    "dev": "nodemon bot.js"
+    "start": "node bot.js"
   },
-  "keywords": ["game", "multiplayer", "slither", "websocket"],
-  "author": "Votre nom",
-  "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.6.1",
-    "cors": "^2.8.5"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+    "socket.io-client": "^4.6.1"
   },
   "engines": {
     "node": ">=18.0.0"
