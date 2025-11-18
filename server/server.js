@@ -26,9 +26,10 @@ const CONFIG = {
   SEGMENT_RADIUS: 8,
   BASE_SPEED: 2.5,
   BOOST_SPEED: 5,
-  BOOST_LOSS: 0.05,
+  BOOST_LOSS: 0.15, // Plus visible la perte
   ORB_VALUE: 1,
-  VIEW_DISTANCE: 1200
+  VIEW_DISTANCE: 1200,
+  MAX_SEGMENTS_SEND: 200 // Limite pour l'envoi (optimisation)
 };
 
 // État du jeu
@@ -104,13 +105,17 @@ class Snake {
     
     this.segments.unshift(newHead);
     
-    // Gestion du boost (perte de masse)
+    // Gestion du boost (perte de masse) - CORRIGÉ
     if (this.boosting && this.segments.length > CONFIG.INITIAL_SNAKE_LENGTH + 5) {
-      const lossAmount = CONFIG.BOOST_LOSS;
-      for (let i = 0; i < lossAmount && this.segments.length > CONFIG.INITIAL_SNAKE_LENGTH; i++) {
-        this.segments.pop();
+      // Retirer plusieurs segments d'un coup pour que ce soit visible
+      const segmentsToRemove = Math.ceil(CONFIG.BOOST_LOSS);
+      for (let i = 0; i < segmentsToRemove; i++) {
+        if (this.segments.length > CONFIG.INITIAL_SNAKE_LENGTH) {
+          this.segments.pop();
+        }
       }
     } else {
+      // Comportement normal : enlever le dernier segment
       this.segments.pop();
     }
   }
@@ -139,13 +144,15 @@ class Snake {
   }
   
   toJSON() {
+    // CORRIGÉ : Envoyer tous les segments (avec limite raisonnable)
     return {
       id: this.id,
       nickname: this.nickname,
-      segments: this.segments.slice(0, 50), // Limiter pour la bande passante
+      segments: this.segments.slice(0, CONFIG.MAX_SEGMENTS_SEND), 
       color: this.color,
       score: this.score,
-      radius: this.radius
+      radius: this.radius,
+      length: this.segments.length // Ajouter la longueur réelle
     };
   }
 }
