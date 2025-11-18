@@ -307,8 +307,10 @@
         function updateUI() {
             if (!mySnake) return;
             
+            // Utiliser la longueur réelle envoyée par le serveur
+            const realLength = mySnake.length || mySnake.segments.length;
             document.getElementById('score').textContent = `Score: ${mySnake.score}`;
-            document.getElementById('length').textContent = `Longueur: ${mySnake.segments.length}`;
+            document.getElementById('length').textContent = `Longueur: ${realLength}`;
             
             // Leaderboard
             const list = document.getElementById('leaderboardList');
